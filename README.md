@@ -25,8 +25,8 @@ DELETE e UPDATE usando il LOOKUP atomico per aggiornare o eliminare la giusta ch
 
 # chkwrt_read.cpp
 questo file usa le funzioni implementate nel file cuckooHash.cpp per realizzare un applicazione multithread che scrive e legge nella cuckoo, in particolare le funzioni write_all_incuckoo(..) e read_all_tocuckoo(..) servono appunto a scrivere e leggere un tot numero di elementi nella cuckoo.
-__in scrittura essendo presente una sola vittima è possibile eseguire un massimo di un thread alla volta che va ad inserire chiavi.
-__in lettura invece è multireader cioè possiamo lanciare più thread che vanno a leggere un valore dalla cuckoo.
+in scrittura essendo presente una sola vittima è possibile eseguire un massimo di un thread alla volta che va ad inserire chiavi.
+in lettura invece è multireader cioè possiamo lanciare più thread che vanno a leggere un valore dalla cuckoo.
 
 # main.cpp
 nel main di questo progetto, viene prima allocata e inizializzata la cuckoo hash table e poi vengono eseguiti diversi test per valutare le prestazioni della cuckoo. 
