@@ -14,7 +14,7 @@ void delete_in_cuckoo(packetID* key, cuckooTable *T);
 
 void update_in_cuckoo(packetID* key, cuckooTable *T, int value);
 
-void write_all_incuckoo(packet_main* pack, cuckooTable *T, int numEntry, int * packInsert);
+void write_all_incuckoo(packet_main* pack, cuckooTable *T, int numEntry, int numPack, int * packInsert);
 
 void read_all_tocuckoo(packet_main* pack, cuckooTable *T, int numEntry, int numberQuery, int * packRead);
 

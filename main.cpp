@@ -74,20 +74,27 @@ return 0;
 
 void test1(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int numpack, const int numthread_writer, const int numthread_reader){
 	printf("test insert\n");
+	
 	//write in cuckoo
 	int pck_insert=0;
-	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry, &pck_insert);
+	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry, numpack, &pck_insert);
 	//join
 	writeThread.join();
 }
 
 void test2(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int numpack, const int numthread_writer, const int numthread_reader){
 	printf("test insert a pieno carico\n");
-	std:: vector <int> numInsrt=displacemnt_thread(numEntry, 4);
+	
 	//write in cuckoo
+	std:: vector <int> numInsrt=displacemnt_thread(numEntry, 4);
+	int index=0;
 	for(int k=0; k<4; k++){
 		int pck_insert=0;
-		std:: thread writeThread(write_all_incuckoo, &pack[k*numInsrt[k]], T, numInsrt[k], &pck_insert);
+		if(k==0)
+			index=k*numInsrt[k];
+		else	
+			index=k*numInsrt[k-1];
+		std:: thread writeThread(write_all_incuckoo, &pack[index], T, numInsrt[k], numpack, &pck_insert);
 		//join
 		writeThread.join();
 	}
@@ -95,9 +102,10 @@ void test2(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int n
 	
 void test3(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int numpack, const int numthread_writer, const int numthread_reader){
 	printf("test lettura\n");
+	
 	//write in cuckoo
 	int pck_insert=0;
-	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry, &pck_insert);
+	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry, numpack, &pck_insert);
 	//join
 	writeThread.join();	
 	
@@ -119,14 +127,13 @@ void test3(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int n
 
 void test4(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int numpack, const int numthread_writer, const int numthread_reader){
 	printf("test lettura con insert\n");
-	int pck_insert=0;
-	//write in cuckoo 50%
-	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry/2, &pck_insert);
-	writeThread.join();
-	//write in cuckoo 90%
-	pck_insert=0;	
-	std:: thread writeThread2(write_all_incuckoo, &pack[numEntry/2], T, numpack-(numEntry/2), &pck_insert);
 	
+	//write in cuckoo 50%
+	int pck_insert=0;
+	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry/2, numpack, &pck_insert);
+	//join
+	writeThread.join();
+
 	//read to cuckoo
 	int pckfind=0;
 	std:: vector <int> numQueryxThread=displacemnt_thread(numQuery, numthread_reader);
@@ -135,6 +142,11 @@ void test4(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int n
 		std:: thread readThread(read_all_tocuckoo, pack, T, numpack, numQueryxThread[i], &pckfind);
 		list_reader.push_back(std::move(readThread));
 	}
+
+	//write in cuckoo 90%
+	pck_insert=0;	
+	std:: thread writeThread2(write_all_incuckoo, pack, T, numQuery, numpack, &pck_insert);
+	
 
 	//join
 	for(int i=0; i<numthread_reader; i++)
@@ -144,11 +156,11 @@ void test4(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int n
 }
 
 void test5(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int numpack, const int numthread_writer, const int numthread_reader){
-	
 	printf("test lettura con insert e delete\n");
+	
 	//write in cuckoo
 	int pck_insert=0;
-	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry, &pck_insert);
+	std:: thread writeThread(write_all_incuckoo, pack, T, numEntry/2, numpack, &pck_insert);
 	//join
 	writeThread.join();
 
@@ -160,12 +172,12 @@ void test5(cuckooTable *T, packet_main* pack,  int numEntry, int numQuery, int n
 		std:: thread readThread(read_all_tocuckoo, pack, T, numpack, numQueryxThread[i], &pckfind);
 		list_reader.push_back(std::move(readThread));
 	}
+
 	//delete and insert
 	int pckdelete=0;
-	int QueryDelete=numQuery/2;
 	pck_insert=0;
-	std:: thread deleteThread(delete_all_incuckoo, pack, T, numpack, QueryDelete, &pckdelete);
-	std:: thread writeThread2(write_all_incuckoo, &pack[numEntry], T, numpack-numEntry, &pck_insert);
+	std:: thread deleteThread(delete_all_incuckoo, pack, T, numpack, numQuery/2, &pckdelete);
+	std:: thread writeThread2(write_all_incuckoo, pack, T, numQuery/3, numpack, &pck_insert);
 
 	//join
 	for(int i=0; i<numthread_reader; i++)

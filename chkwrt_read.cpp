@@ -64,15 +64,16 @@ void update_in_cuckoo(packetID* key, cuckooTable *T, int value){
 
 
 
-void write_all_incuckoo(packet_main* pack, cuckooTable *T, int numEntry, int *packInsert)
+void write_all_incuckoo(packet_main* pack, cuckooTable *T, int numEntry, int numPack, int *packInsert)
 {
 	printf("inserimento in cuckoo...\n");
 	int insrtFaild=0;
+	int j=0;
 	testing writeT;
 	writeT.startT=time(NULL);
 
 	for(int i=0; i< numEntry; i++){
-		insrtFaild=ckh_atomic_insert(T, &pack[i].p, pack[i].id);
+		insrtFaild=ckh_atomic_insert(T, &pack[j].p, pack[j].id);
 		if(insrtFaild==0){
 			//pack[i].ckh=1;
 			__atomic_add_fetch(packInsert, 1, 0);
@@ -80,13 +81,17 @@ void write_all_incuckoo(packet_main* pack, cuckooTable *T, int numEntry, int *pa
 		else {
 			//printf("paccheto %d, NON INSERITO\n", pack[i].p.dst_addr);
 		}
+		if(j<numPack)
+			j++;
+		else
+			j=0;
 			
 	}
 
 	writeT.endT=time(NULL);
 	writeT.tTime=difftime(writeT.endT, writeT.startT);
 	printf("SCRITTURA: %dkey/sec\n", *packInsert/(int)writeT.tTime);
-	printf("load factor: %d, entry inserite: %d, tot entry presenti: %d\n", T->num_entry*100/T->TOTentry, *packInsert, T->num_entry);
+	printf("load factor: %d, entry inserite/aggiornate: %d, entry presenti: %d\n", T->num_entry*100/T->TOTentry, *packInsert, T->num_entry);
 
 
 };
@@ -121,7 +126,7 @@ void read_all_tocuckoo(packet_main* pack, cuckooTable *T, int numPack, int numbe
 };
 
 void delete_all_incuckoo(packet_main* pack, cuckooTable *T, int numPack, int numberQuery, int * packDel){
-	printf("delete in cuckoo...\n");
+	printf("delete to cuckoo...\n");
 	int delFaild=0;
 	testing delT;
 	delT.startT=time(NULL);
@@ -144,7 +149,7 @@ void delete_all_incuckoo(packet_main* pack, cuckooTable *T, int numPack, int num
 }
 
 void update_all_incuckoo(packet_main* pack, cuckooTable *T, int numPack, int numberQuery, int * packUpdt){
-	printf("delete in cuckoo...\n");
+	printf("update in cuckoo...\n");
 	int uptFaild=0;
 	testing updtT;
 	updtT.startT=time(NULL);
